@@ -1,0 +1,21 @@
+{
+    "movements": [
+      {
+        "Troop Name": "Infantry",
+        "Minutes per Hex": 60
+      },
+      {
+        "Troop Name": "Archers",
+        "Minutes per Hex": 60
+      },
+      {
+        "Troop Name": "Spearmen",
+        "Minutes per Hex": 60
+      },
+      {
+        "Troop Name": "Cavalry",
+        "Minutes per Hex": 45
+      }
+    ]
+  }
+  

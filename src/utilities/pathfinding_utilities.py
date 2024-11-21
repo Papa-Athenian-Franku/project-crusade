@@ -25,8 +25,14 @@ def heuristic(hex1, hex2):
     return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
 # A* Pathfinding Algorithm
-def a_star(movement_type, start, goal, hexes):
+def a_star(movement_type, start, goal, hexes, avoid):
     hex_map = {hex['Hex']: hex for hex in hexes}
+    
+    # Translate avoid list into hex IDs
+    avoid_hexes = set()
+    for hex_data in hexes:
+        if hex_data['Hex'] in avoid or hex_data.get('Holding Name') in avoid:
+            avoid_hexes.add(hex_data['Hex'])
     
     open_set = []
     heappush(open_set, (0, start))  # (priority, hex)
@@ -40,7 +46,7 @@ def a_star(movement_type, start, goal, hexes):
         if current == goal:
             return reconstruct_path(came_from, current)
         
-        neighbors = get_neighbors(movement_type, current, hex_map)
+        neighbors = get_neighbors(movement_type, current, hex_map, avoid_hexes)
         for neighbor in neighbors:
             terrain_cost = terrain_movement_cost(movement_type, hex_map[neighbor])
             tentative_g_score = g_score[current] + terrain_cost
@@ -82,8 +88,8 @@ def terrain_movement_cost(movement_type, hex_data):
         return 1
     return float('inf')  # Non-sea is impassable by ship
 
-# Get the neighbors of a hex, taking into account terrain passability
-def get_neighbors(movement_type, hex_id, hex_map):
+# Get the neighbors of a hex, considering avoid list
+def get_neighbors(movement_type, hex_id, hex_map, avoid_hexes):
     col, row = hex_id[0], int(hex_id[1:])
     neighbors = []
     
@@ -101,11 +107,20 @@ def get_neighbors(movement_type, hex_id, hex_map):
         neighbor_row = row + dy
         neighbor_id = f"{neighbor_col}{neighbor_row}"
         
-        # Check if the neighbor exists and is not impassable (based on its properties)
+        # Check if the neighbor exists
         if neighbor_id in hex_map:
+            # Skip neighbors in the avoid list
+            if neighbor_id in avoid_hexes:
+                print(f"Skipping {neighbor_id} because it's in the avoid list.")
+                continue
+            
             neighbor_data = hex_map[neighbor_id]
-            if terrain_movement_cost(movement_type, neighbor_data) != float('inf'):  # Ensure it's not impassable
+            
+            # Ensure it's not impassable based on terrain
+            if terrain_movement_cost(movement_type, neighbor_data) != float('inf'):
                 neighbors.append(neighbor_id)
+            else:
+                print(f"Skipping {neighbor_id} because terrain is impassable.")
     
     return neighbors
 
@@ -115,25 +130,38 @@ def hex_to_coordinates(hex_id):
     column_index = ord(col) - ord('A')
     return column_index, row
 
-def retrieve_movement_path(movement_type, start, goal):
+# Accepts army/fleet movement types, hex id or holding name starts/goals and a list of hex id/holding names to avoid.
+def retrieve_movement_path(movement_type, start, goal, avoid):
     hexes = retrieve_digital_map()
 
-    # If start or goal is a Holding name, resolve it to a hex ID using the Holding key
+    # Resolve Holding names to hex IDs for start, goal, and avoid list
     start_hex = None
     goal_hex = None
+    avoid_hexes = set()
+    print(f"avoid data = {avoid}")
 
     for hex_data in hexes:
+        # Resolve start and goal
         if hex_data.get('Holding Name') == start:
-            start_hex = hex_data['Hex']  # Get the hex ID from the Holding
+            start_hex = hex_data['Hex']
         if hex_data.get('Holding Name') == goal:
-            goal_hex = hex_data['Hex']  # Get the hex ID from the Holding
+            goal_hex = hex_data['Hex']
+        
+        # Populate avoid_hexes for all avoid entries
+        for avoid_item in avoid:
+            if hex_data['Hex'] == avoid_item or hex_data.get('Holding Name') == avoid_item:
+                avoid_hexes.add(hex_data['Hex'])
+    
+    # Debugging information
+    print(f"Resolved Start Hex: {start_hex}, Goal Hex: {goal_hex}, Avoid Hexes: {avoid_hexes}")
 
+    # Verify start and goal
     if not start_hex or not goal_hex:
         print("Invalid start or goal Holding name.")
         return None
 
-    # Use the resolved hex IDs for the a_star function
-    path = a_star(movement_type, start_hex, goal_hex, hexes)
+    # Run the A* algorithm
+    path = a_star(movement_type.lower(), start_hex, goal_hex, hexes, avoid_hexes)
     
     if path:
         print("Path found:", path)
@@ -141,4 +169,3 @@ def retrieve_movement_path(movement_type, start, goal):
         print("No path found.")
     
     return path
-
