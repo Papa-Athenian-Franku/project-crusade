@@ -130,34 +130,40 @@ def hex_to_coordinates(hex_id):
     column_index = ord(col) - ord('A')
     return column_index, row
 
-# Accepts army/fleet movement types, hex id or holding name starts/goals and a list of hex id/holding names to avoid.
 def retrieve_movement_path(movement_type, start, goal, avoid):
     hexes = retrieve_digital_map()
 
-    # Resolve Holding names to hex IDs for start, goal, and avoid list
+    # Ensure avoid is a list (or empty list if None)
+    if avoid is None:
+        avoid = []
+
+    avoid_hexes = set()
     start_hex = None
     goal_hex = None
-    avoid_hexes = set()
-    print(f"avoid data = {avoid}")
 
+    # Check if start and goal are Hex IDs
     for hex_data in hexes:
-        # Resolve start and goal
-        if hex_data.get('Holding Name') == start:
-            start_hex = hex_data['Hex']
-        if hex_data.get('Holding Name') == goal:
-            goal_hex = hex_data['Hex']
+        if start == hex_data['Hex']:
+            start_hex = start  # Start is already a Hex ID
+        elif hex_data.get('Holding Name') == start:
+            start_hex = hex_data['Hex']  # Start resolved from Holding Name
         
-        # Populate avoid_hexes for all avoid entries
+        if goal == hex_data['Hex']:
+            goal_hex = goal  # Goal is already a Hex ID
+        elif hex_data.get('Holding Name') == goal:
+            goal_hex = hex_data['Hex']  # Goal resolved from Holding Name
+        
+        # Populate avoid_hexes
         for avoid_item in avoid:
-            if hex_data['Hex'] == avoid_item or hex_data.get('Holding Name') == avoid_item:
+            if avoid_item == hex_data['Hex'] or hex_data.get('Holding Name') == avoid_item:
                 avoid_hexes.add(hex_data['Hex'])
-    
+
     # Debugging information
     print(f"Resolved Start Hex: {start_hex}, Goal Hex: {goal_hex}, Avoid Hexes: {avoid_hexes}")
 
     # Verify start and goal
     if not start_hex or not goal_hex:
-        print("Invalid start or goal Holding name.")
+        print("Invalid start or goal Hex or Holding Name.")
         return None
 
     # Run the A* algorithm

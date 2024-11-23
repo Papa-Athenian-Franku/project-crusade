@@ -6,7 +6,7 @@ from utilities import pathfinding_utilities as path_utils
 class Retrieval(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
+        
     @commands.command()
     async def domesticinfo(self, ctx, house):
         sheet_values = sheet_utils.get_sheet_by_name("Domestics")
@@ -38,7 +38,7 @@ class Retrieval(commands.Cog):
         sheet_values = sheet_utils.get_sheet_by_name("Armies")
         column_headings = sheet_values[0]
         for row in sheet_values:
-            if row[1] == arm:
+            if row[1] == army:
                 await ctx.send(embed=embed_utils.set_info_embed_from_list(column_headings, row))
 
     # Accepts Fleet Name
@@ -55,10 +55,6 @@ class Retrieval(commands.Cog):
         sheet_values = sheet_utils.get_sheet_by_name("References")
         column_headings = sheet_values[0]
         await ctx.send(embed=embed_utils.set_info_embed_from_list(column_headings, sheet_values))
-
-    #@commands.command()
-    #async def retrievemovementpath(self, ctx, movement_type, start, goal, avoid_list):
-        #await ctx.send(path_utils.retrieve_movement_path(movement_type, start, goal, avoid_list))
 
 async def setup(bot):
     await bot.add_cog(Retrieval(bot))

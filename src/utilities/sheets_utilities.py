@@ -43,12 +43,19 @@ def write_to_row(sheet_name, given_data):
         # Find number of rows
         number_of_rows = len(values)
 
-        # Insert Data into next empty Row
-        worksheet.insert_row(given_data, number_of_rows + 1)
+        # Process `given_data` to ensure lists are stored as single-cell strings
+        processed_data = [
+            ", ".join(item) if isinstance(item, list) else str(item)
+            for item in given_data
+        ]
+
+        # Insert Data into the next empty Row
+        worksheet.insert_row(processed_data, number_of_rows + 1)
         return True
             
     except gspread.exceptions.WorksheetNotFound:
         return False
+
     
 def write_to_cell(sheet_name, column, given_data):
     # Open the Google Sheets document by URL

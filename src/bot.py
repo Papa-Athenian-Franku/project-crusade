@@ -7,7 +7,7 @@ intents = discord.Intents.all()
 
 """Each cog is a Python class that subclasses commands."""
 # Commands (cogs) listen for user interaction.
-cogs: list = ["commands.Retrieval"]
+cogs: list = ["commands.Retrieval", "commands.Creation"]
 
 client = commands.Bot(command_prefix=settings.Prefix, help_command=None, intents=intents)
 
