@@ -1,21 +1,25 @@
 import os
 import discord
 from discord.ext import commands
-
 import settings
 
 intents = discord.Intents.all()
 
-"""Each cog is a Python class that subclasses commands."""
-# Commands (cogs) listen for user interaction.
+# List of cogs to load
 cogs: list = ["commands.Retrieval", "commands.Creation"]
 
-client = commands.Bot(command_prefix=settings.Prefix if not None else os.environ["STATUS"], help_command=None, intents=intents)
+client = commands.Bot(command_prefix=settings.Prefix, help_command=None, intents=intents)
 
 @client.event
 async def on_ready():
     print("Bot is ready!")
-    await client.change_presence(status=discord.Status.online, activity=discord.Game(settings.BotStatus))
+    # Use a fallback for BotStatus
+    await client.change_presence(
+        status=discord.Status.online, 
+        activity=discord.Game(os.environ.get("BOTSTATUS", settings.BotStatus))
+    )
+    
+    # Load all cogs
     for cog in cogs:
         try:
             print(f"Loading cog {cog}")
@@ -23,6 +27,7 @@ async def on_ready():
             print(f"Loaded cog {cog}")
         except Exception as e:
             exc = "{}: {}".format(type(e).__name__, e)
-            print("Failed to load cog {}\n{}".format(cog, exc))
+            print(f"Failed to load cog {cog}\n{exc}")
 
-client.run(settings.TOKEN if not None else os.environ["TOKEN"])
+# Use a fallback for TOKEN in case it's not in the environment
+client.run(os.environ.get("TOKEN", settings.TOKEN))
