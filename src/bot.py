@@ -1,3 +1,4 @@
+import os
 import discord
 from discord.ext import commands
 
@@ -9,7 +10,7 @@ intents = discord.Intents.all()
 # Commands (cogs) listen for user interaction.
 cogs: list = ["commands.Retrieval", "commands.Creation"]
 
-client = commands.Bot(command_prefix=settings.Prefix, help_command=None, intents=intents)
+client = commands.Bot(command_prefix=settings.Prefix if not None else os.environ["STATUS"], help_command=None, intents=intents)
 
 @client.event
 async def on_ready():
@@ -24,4 +25,4 @@ async def on_ready():
             exc = "{}: {}".format(type(e).__name__, e)
             print("Failed to load cog {}\n{}".format(cog, exc))
 
-client.run(settings.TOKEN)
+client.run(settings.TOKEN if not None else os.environ["TOKEN"])

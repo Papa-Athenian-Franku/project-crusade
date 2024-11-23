@@ -65,5 +65,4 @@ env.bak/
 venv.bak/
 
 # Program Sensitive Info
-src/settings.py
 src/credentials.json
