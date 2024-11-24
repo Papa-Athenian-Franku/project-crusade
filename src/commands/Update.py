@@ -22,7 +22,7 @@ class Update(commands.Cog):
                 data = list(reader)  # Convert the CSV rows into a list of lists
 
                 # Write the data to the corresponding Google Sheet
-                result = sheet_utils.write_sheet_by_name(sheet, data)
+                result = sheet_utils.overwrite_sheet_by_name(sheet, data)
 
                 if result:
                     await ctx.send(f"Successfully updated the Google Sheet for {sheet}.")

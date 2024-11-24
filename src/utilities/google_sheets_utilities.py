@@ -53,3 +53,36 @@ def write_sheet_by_name(sheet_name, given_data):
     except Exception as e:
         print(f"Error writing to sheet {sheet_name}: {e}")
         return False
+
+def overwrite_sheet_by_name(sheet_name, given_data):
+    """
+    Overwrites the entire sheet with new data.
+    Clears the existing content and writes the new data.
+    """
+    # Open the Google Sheets document by URL
+    sheet = client.open_by_url(SHEET_URL)
+
+    try:
+        # Access the specific worksheet by name
+        worksheet = sheet.worksheet(sheet_name)
+
+        # Clear all existing content in the sheet
+        worksheet.clear()
+
+        # Write the new data row by row, starting from the first row
+        for row in given_data:
+            # Process `given_data` to ensure lists are stored as single-cell strings
+            processed_row = [
+                ", ".join(item) if isinstance(item, list) else str(item)
+                for item in row
+            ]
+            worksheet.append_row(processed_row)
+
+        return True
+
+    except gspread.exceptions.WorksheetNotFound:
+        print(f"Worksheet '{sheet_name}' not found.")
+        return False
+    except Exception as e:
+        print(f"Error overwriting sheet {sheet_name}: {e}")
+        return False
