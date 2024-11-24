@@ -39,11 +39,16 @@ async def on_ready():
     sheet_names = ["Claims", "Wars", "Domestics", "Holdings", 
                    "Garrisons", "Armies", "Fleets", 
                    "Movements", "References", "Map"]
+
+    # Ensure the directory exists
+    directory = "src/sheets"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     
     for sheet in sheet_names:
         data = sheet_utils.get_sheet_by_name(sheet)
         if data:
-            with open(f"src/sheets/{sheet}.csv", mode='w', newline='') as file:
+            with open(f"{directory}/{sheet}.csv", mode='w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerows(data)
 
