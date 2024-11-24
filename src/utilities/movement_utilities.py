@@ -1,4 +1,4 @@
-from utilities import sheets_utilities as sheet_utils
+from utilities import local_sheets_utilities as sheet_utils
 from utilities import collection_utilities as collection_utils
 
 async def collectmovementunitsinfo(bot, ctx):
@@ -6,7 +6,9 @@ async def collectmovementunitsinfo(bot, ctx):
                                                   "Movement Type: (Army or Fleet)", str)
     army_fleet_name = await collection_utils.ask_question(ctx, bot, 
                                                     f"Name of {movement_type}: (E.G, 1st Army of Antioch)", str)
-    return movement_type, army_fleet_name
+    reason = await collection_utils.ask_question(ctx, bot, 
+                                                    "Reason for Movement: (Conquest, Raid, Reinforce, Other)", str)
+    return movement_type, army_fleet_name, reason
 
 async def collectautofillavoidinfo(movement_type, army_fleet_name):
     """

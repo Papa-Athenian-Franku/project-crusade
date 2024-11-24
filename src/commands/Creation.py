@@ -1,21 +1,28 @@
 from discord.ext import commands
-from utilities import sheets_utilities as sheet_utils
+from utilities import local_sheets_utilities as sheet_utils
 from utilities import embed_utilities as embed_utils
 from utilities import pathfinding_utilities as path_utils
-from utilities import collection_utilities as collection_utils
 from utilities import movement_utilities as movement_utils
+from utilities import authorisation_utilities as auth_utils
+from utilities import collection_utilities as collection_utils
+from utilities import army_utilities as army_utils
 
 class Creation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
-    async def createmovement(self, ctx):
+    async def movement(self, ctx):
         successful_write = False
         while True:
             # Get Movement type, Army or Fleet, and Army or Fleet Name.
-            movement_type, army_fleet_name = await movement_utils.collectmovementunitsinfo(self.bot, ctx)
+            movement_type, army_fleet_name, reason = await movement_utils.collectmovementunitsinfo(self.bot, ctx)
             if movement_type.lower() != "army" and movement_type.lower() != "fleet":
+                break
+
+            army_fleet_player_id = auth_utils.get_player_id_from_army_fleet_name(movement_type, army_fleet_name)
+            if army_fleet_player_id != ctx.message.author:
+                ctx.send("**You are not the associated claim dumb dumb!**")
                 break
 
             # Get autofill avoid info based on Army/Fleet Name and Movement type.
@@ -39,7 +46,7 @@ class Creation(commands.Cog):
                 minutes_per_tile = await movement_utils.getminutespertile(troops, siegecraft)
 
             # Create Movement in Sheets.
-            successful_write = sheet_utils.write_to_row("Movements", [movement_type, army_fleet_name, path, path[0], minutes_per_tile, 0])
+            successful_write = sheet_utils.write_to_row("Movements", [movement_type, army_fleet_name, reason, path, path[0], minutes_per_tile, 0])
             break
         
         if successful_write:
@@ -48,6 +55,7 @@ class Creation(commands.Cog):
                 embed=embed_utils.set_info_embed_from_list(
                     [
                         "Embed Title",
+                        "Reason",
                         "Starting Hex ID", 
                         "Destination Hex ID", 
                         "Path of Hex IDs",
@@ -55,7 +63,8 @@ class Creation(commands.Cog):
                         "Estimated Time to Completion"
                     ],
                     [
-                        f"Movement from {start} to {goal}.", 
+                        f"Movement from {start} to {goal}.",
+                        reason,
                         start,
                         goal, 
                         path,
@@ -66,6 +75,22 @@ class Creation(commands.Cog):
             )
         else:
             await ctx.send("Movement Creation Failed. Start again but be less retarded please.")
+
+    @commands.command()
+    async def claim(self, ctx):
+        # Prompt the user for their house name
+        house = await collection_utils.ask_question(
+            ctx, self.bot,
+            "Give your House Name as: House Whatever (e.g., House O'Neill)", str
+        )
+        
+        # Validate the format of the house name
+        if house.strip().startswith("House "):
+            # Log the claim in the "Claims" sheet
+            sheet_utils.write_to_row("Claims", [house.strip(), str(ctx.message.author)])
+            await ctx.send(f"**You have claimed {house.strip()}!**")
+        else:
+            await ctx.send("**Incorrect House Name format! Please try again using the format: 'House Whatever'.**")
 
 async def setup(bot):
     await bot.add_cog(Creation(bot))
