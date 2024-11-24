@@ -71,11 +71,17 @@ def overwrite_sheet_by_name(sheet_name, given_data):
 
         # Write the new data row by row, starting from the first row
         for row in given_data:
-            # Process `given_data` to ensure lists are stored as single-cell strings
-            processed_row = [
-                ", ".join(item) if isinstance(item, list) else str(item)
-                for item in row
-            ]
+            # For each row, we do not want to modify the content that is not list-like
+            processed_row = []
+            for item in row:
+                if isinstance(item, list):
+                    # If it's a list, we join it with commas
+                    processed_row.append(", ".join(item))
+                else:
+                    # If it's a string or number, we leave it as is
+                    processed_row.append(str(item))
+            
+            # Insert the processed row into the sheet
             worksheet.append_row(processed_row)
 
         return True
