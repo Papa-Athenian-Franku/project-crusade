@@ -13,7 +13,7 @@ class Update(commands.Cog):
     async def updatesheets(self, ctx):
         sheet_names = ["Claims", "Wars", "Domestics", "Holdings", 
                    "Garrisons", "Armies", "Fleets", 
-                   "Movements", "References", "Map"]
+                   "Movements", "References"]
     
         for sheet in sheet_names:
             # Open the local CSV file and read its contents

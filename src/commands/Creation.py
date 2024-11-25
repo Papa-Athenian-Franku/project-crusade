@@ -86,9 +86,14 @@ class Creation(commands.Cog):
         
         # Validate the format of the house name
         if house.strip().startswith("House "):
-            # Log the claim in the "Claims" sheet
-            sheet_utils.write_to_row("Claims", [house.strip(), str(ctx.message.author)])
-            await ctx.send(f"**You have claimed {house.strip()}!**")
+            claims = sheet_utils.get_sheet_by_name("Claims")
+            for claim in claims:
+                if claim[0] == "":
+                     # Log the claim in the "Claims" sheet since house was not in claims.
+                    sheet_utils.write_to_row("Claims", [house.strip(), str(ctx.message.author)])
+                    await ctx.send(f"**You have claimed {house.strip()}!**")
+                elif claim[0] == house.strip():
+                    await ctx.send("**You Can't create duplicate claims! Grrr**")
         else:
             await ctx.send("**Incorrect House Name format! Please try again using the format: 'House Whatever'.**")
 
