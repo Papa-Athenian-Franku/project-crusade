@@ -12,8 +12,7 @@ class Update(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def updatesheets(self, ctx):
         sheet_names = ["Claims", "Wars", "Domestics", "Holdings", 
-                   "Garrisons", "Armies", "Fleets", 
-                   "Movements", "References"]
+                   "Garrisons", "Armies", "Fleets", "Movements"]
     
         for sheet in sheet_names:
             # Open the local CSV file and read its contents
