@@ -1,6 +1,9 @@
 import discord
 
-async def ask_question(ctx, bot, question, return_type, timeout=60):
+class CollectionUtils:
+
+    @staticmethod
+    async def ask_question(ctx, bot, question, return_type, timeout=60):
         await ctx.send(question)
 
         def check(message):

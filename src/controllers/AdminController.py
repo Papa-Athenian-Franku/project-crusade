@@ -1,13 +1,12 @@
 import csv
 from discord.ext import commands
-from utilities import google_sheets_utilities as sheet_utils
-from utilities import embed_utilities as embed_utils
-from utilities import pathfinding_utilities as path_utils
+from utils.sheets.GoogleSheetUtils import GoogleSheetUtils
 
-class Update(commands.Cog):
+class AdminController(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
+        self.google_sheet_utils = GoogleSheetUtils()
+        
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def updatesheets(self, ctx):
@@ -21,7 +20,7 @@ class Update(commands.Cog):
                 data = list(reader)  # Convert the CSV rows into a list of lists
 
                 # Write the data to the corresponding Google Sheet
-                result = sheet_utils.overwrite_sheet_by_name(sheet, data)
+                result = self.google_sheet_utils.overwrite_sheet_by_name(sheet, data)
 
                 if result:
                     await ctx.send(f"Successfully updated the Google Sheet for {sheet}.")
@@ -29,4 +28,4 @@ class Update(commands.Cog):
                     await ctx.send(f"Failed to update the Google Sheet for {sheet}.")
 
 async def setup(bot):
-    await bot.add_cog(Update(bot))
+    await bot.add_cog(AdminController(bot))

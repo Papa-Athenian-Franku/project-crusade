@@ -1,20 +1,24 @@
-import settings
+import src.config.settings as settings
 from discord.ext import commands, tasks
-from utilities import local_sheets_utilities as sheet_utils
-from utilities import embed_utilities as embed_utils
-from utilities import pathfinding_utilities as path_utils
-from utilities import authorisation_utilities as auth_utils
+from utils.sheets.LocalSheetUtils import LocalSheetUtils
+from utils.pathfinding.PathfindingUtils import PathFindingUtils
+from utils.misc.AuthorisationUtils import AuthorisationUtils
+from utils.misc.EmbedUtils import EmbedUtils
 
-class Movements(commands.Cog):
+class MovementBackgroundController(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.map = path_utils.retrieve_digital_map()
+        self.local_sheet_utils = LocalSheetUtils()
+        self.path_finding_utils = PathFindingUtils()
+        self.map = self.path_finding_utils.retrieve_digital_map()
+        self.authorisation_utils = AuthorisationUtils()
+        self.embed_utils = EmbedUtils()
         self.movements = {}  # Dictionary to store movements in memory
         self.load_movements()  # Load movements when the bot starts
         self.update_movements.start()  # Start the background task
-
+        
     def load_movements(self):
-        sheet_values = sheet_utils.get_sheet_by_name("Movements")
+        sheet_values = self.local_sheet_utils.get_sheet_by_name("Movements")
         if not sheet_values:
             print("Error: Could not retrieve data for 'Movements'.")
             return
@@ -77,7 +81,7 @@ class Movements(commands.Cog):
             ])
         
         # Write the updated data back to the sheet
-        sheet_utils.update_sheet_by_name("Movements", [sheet_utils.get_sheet_by_name("Movements")[0]] + updated_data)
+        self.local_sheet_utils.update_sheet_by_name("Movements", [self.local_sheet_utils.get_sheet_by_name("Movements")[0]] + updated_data)
 
     async def complete_movement(self, name):
         data = self.movements[name]
@@ -86,10 +90,10 @@ class Movements(commands.Cog):
         await channel.send(f"- The {data['name']} arrives at {destination}.\nThey intend to: {data['reason']}")
         
         # Send player embed dm of movement info.
-        user = self.bot.fetch_user(auth_utils.get_player_id_from_army_fleet_name(data['movement_type'], data['name']))
+        user = self.bot.fetch_user(self.authorisation_utils.get_player_id_from_army_fleet_name(data['movement_type'], data['name']))
         await user.send(
                 "**Your movement is finished pookie :)**",
-                embed=embed_utils.set_info_embed_from_list(
+                embed=self.embed_utils.set_info_embed_from_list(
                     [
                         "Embed Title",
                         "Reason",
@@ -115,7 +119,7 @@ class Movements(commands.Cog):
             del self.movements[name]
         
         # Remove the movement from the sheet (Overwrite the entire sheet minus the completed movement)
-        sheet_values = sheet_utils.get_sheet_by_name("Movements")
+        sheet_values = self.local_sheet_utils.get_sheet_by_name("Movements")
         updated_rows = [sheet_values[0]]  # Keep the header row
         
         for row in sheet_values[1:]:
@@ -123,7 +127,7 @@ class Movements(commands.Cog):
                 updated_rows.append(row)
         
         # Overwrite the sheet without the completed movement
-        sheet_utils.update_sheet_by_name("Movements", updated_rows)
+        self.local_sheet_utils.update_sheet_by_name("Movements", updated_rows)
     
     async def search_map_for_destination(self, destination):
         # Iterate through each row in the map data
@@ -137,4 +141,4 @@ class Movements(commands.Cog):
         return destination
 
 async def setup(bot):
-    await bot.add_cog(Movements(bot))
+    await bot.add_cog(MovementBackgroundController(bot))

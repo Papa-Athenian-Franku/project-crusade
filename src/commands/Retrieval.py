@@ -9,18 +9,6 @@ class Retrieval(commands.Cog):
         self.bot = bot
         
     @commands.command()
-    async def domesticinfo(self, ctx, house):
-        player_id = auth_utils.get_player_id_from_house_name(house)
-        if player_id != ctx.message.author:
-            ctx.send("**You are not the associated claim dumb dumb!**")
-        else:
-            sheet_values = sheet_utils.get_sheet_by_name("Domestics")
-            column_headings = sheet_values[0]
-            for row in sheet_values:
-                if row[0] == house:
-                    await ctx.send(embed=embed_utils.set_info_embed_from_list(column_headings, row))
-
-    @commands.command()
     async def holdinginfo(self, ctx, holding):
         sheet_values = sheet_utils.get_sheet_by_name("Holdings")
         column_headings = sheet_values[0]
@@ -33,7 +21,7 @@ class Retrieval(commands.Cog):
     async def garrisoninfo(self, ctx, garrison):
         player_id = auth_utils.get_player_id_from_garrison_name(garrison)
         if player_id != ctx.message.author:
-            ctx.send("**You are not the associated claim dumb dumb!**")
+            await ctx.send("**You are not the associated claim dumb dumb!**")
         else:
             sheet_values = sheet_utils.get_sheet_by_name("Garrisons")
             column_headings = sheet_values[0]
@@ -46,7 +34,7 @@ class Retrieval(commands.Cog):
     async def armyinfo(self, ctx, army):
         player_id = auth_utils.get_player_id_from_army_fleet_name("Army", army)
         if player_id != ctx.message.author:
-            ctx.send("**You are not the associated claim dumb dumb!**")
+            await ctx.send("**You are not the associated claim dumb dumb!**")
         else:
             sheet_values = sheet_utils.get_sheet_by_name("Armies")
             column_headings = sheet_values[0]
@@ -59,7 +47,7 @@ class Retrieval(commands.Cog):
     async def fleetinfo(self, ctx, fleet):
         player_id = auth_utils.get_player_id_from_army_fleet_name("Fleet", fleet)
         if player_id != ctx.message.author:
-            ctx.send("**You are not the associated claim dumb dumb!**")
+            await ctx.send("**You are not the associated claim dumb dumb!**")
         else:
             sheet_values = sheet_utils.get_sheet_by_name("Fleets")
             column_headings = sheet_values[0]
@@ -70,12 +58,6 @@ class Retrieval(commands.Cog):
     @commands.command()
     async def prices(self, ctx):
         sheet_values = sheet_utils.get_sheet_by_name("References")
-        column_headings = sheet_values[0]
-        await ctx.send(embed=embed_utils.set_info_embed_from_list(column_headings, sheet_values))
-
-    @commands.command()
-    async def claims(self, ctx):
-        sheet_values = sheet_utils.get_sheet_by_name("Claims")
         column_headings = sheet_values[0]
         await ctx.send(embed=embed_utils.set_info_embed_from_list(column_headings, sheet_values))
 
@@ -94,20 +76,20 @@ class Retrieval(commands.Cog):
                 await ctx.send(embed=embed_utils.set_info_embed_from_list(column_headings, row))
 
     @commands.command()
-    async def movements(self, ctx):
+    async def retrievemovements(self, ctx):
         """
         Show all ongoing movements for the player issuing the command.
         """
         player_id = ctx.message.author  # Get the player's ID from the context
-        movements = sheet_utils.read_csv("Movements.csv")  # Read the Movements sheet
+        movements = sheet_utils.get_sheet_by_name("Movements")  # Read the Movements sheet
         ongoing_movements = []
 
         # Check each movement entry for the player's ID
         for row in movements:
-            army_fleet_name = row["Name"]
-            path = row["Path"]
-            current_hex = row["Current Hex"]
-            associated_player_id = auth_utils.get_player_id_from_army_fleet_name(row["Movement Type"].title(), army_fleet_name)
+            army_fleet_name = row[1]
+            path = row[3]
+            current_hex = row[4]
+            associated_player_id = auth_utils.get_player_id_from_army_fleet_name(row[0].title(), army_fleet_name)
 
             if associated_player_id == str(player_id):
                 # Append formatted movement details to the list
@@ -122,11 +104,14 @@ class Retrieval(commands.Cog):
             await ctx.author.send(movement_message)
 
     @commands.command()
-    async def movement(self, ctx):
+    async def retrievemovement(self, ctx):
         """
         Retrieve detailed movement information for a specific army or fleet.
         """
-        movements = sheet_utils.read_csv("Movements.csv")
+        movements = sheet_utils.get_sheet_by_name("Movements")
+        if not movements:
+            await ctx.author.send("**There are no movements currently.**")
+            return
         
         # Ask for the Army or Fleet name
         army_fleet_name = await collection_utils.ask_question(
@@ -135,14 +120,14 @@ class Retrieval(commands.Cog):
         )
         
         # Find the movement entry for the given name
-        movement_details = next((row for row in movements if row["Name"] == army_fleet_name), None)
+        movement_details = next((row for row in movements if row[1] == army_fleet_name), None)
 
         if not movement_details:
             await ctx.author.send(f"**No movement details found for {army_fleet_name}.**")
             return
 
         # Get the Movement Type and associated Player ID
-        movement_type = movement_details.get("Movement Type", "").title()  # E.g., "Army" or "Fleet"
+        movement_type = movement_details[0].title()  # E.g., "Army" or "Fleet"
         associated_player_id = auth_utils.get_player_id_from_army_fleet_name(movement_type, army_fleet_name)
 
         # Check if the player is authorized
@@ -165,13 +150,13 @@ class Retrieval(commands.Cog):
                         "Minutes Since Last Hex"
                     ],
                     [
-                        f"Movement from {movement_details["Path"][0]} to {movement_details["Destination"]}.", 
-                        movement_details["Reason"],
-                        movement_details['Path'][0],
-                        movement_details["Destination"], 
-                        movement_details["Path"],
-                        movement_details["minutes_per_hex"],
-                        movement_details["Minutes since last Hex"]
+                        f"Movement from {movement_details[3][0]} to {movement_details[3][-1]}.", 
+                        movement_details[2],
+                        movement_details[3][0],
+                        movement_details[3][-1], 
+                        movement_details[3],
+                        movement_details[5],
+                        movement_details[6]
                     ]
                 )
             )
