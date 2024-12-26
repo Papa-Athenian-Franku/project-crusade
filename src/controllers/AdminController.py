@@ -9,7 +9,7 @@ class AdminController(commands.Cog):
         
     @commands.command()
     @commands.has_permissions(administrator=True)
-    async def updatesheets(self, ctx):
+    async def backup(self, ctx):
         sheet_names = ["Claims", "Wars", "Domestics", "Holdings", 
                    "Garrisons", "Armies", "Fleets", "Movements"]
     
