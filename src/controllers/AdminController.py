@@ -27,5 +27,15 @@ class AdminController(commands.Cog):
                 else:
                     await ctx.send(f"Failed to update the Google Sheet for {sheet}.")
 
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def pause():
+        pass
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def unpause():
+        pass
+
 async def setup(bot):
     await bot.add_cog(AdminController(bot))

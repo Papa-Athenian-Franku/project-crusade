@@ -6,11 +6,12 @@ class ClaimController(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.claim_service = ClaimService()
+        self.collection_utils = CollectionUtils()
 
     @commands.command()
     async def claim(self, ctx):
         # Ask the user for their house name
-        house = await CollectionUtils.ask_question(
+        house = await self.collection_utils.ask_question(
             ctx, self.bot,
             "Give your House Name as: House Whatever (e.g., House O'Neill)", str
         )

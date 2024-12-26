@@ -12,7 +12,7 @@ cogs: list = ["controllers.ArmyController", "controllers.ClaimController",
               "controllers.DomesticController", "controllers.FleetController",
               "controllers.GarrisonController", "controllers.HoldingController",
               "controllers.MovementController", "controllers.AdminController",
-              "controllers.background.MovementBackgroundController"]
+              "controllers.MiscController", "controllers.background.MovementBackgroundController"]
 
 client = commands.Bot(command_prefix=settings.Prefix, help_command=None, intents=intents)
 sheet_utils = GoogleSheetUtils()
@@ -51,7 +51,7 @@ async def download_sheets():
         os.makedirs(directory)
     
     for sheet in sheet_names:
-        data = get_sheet_by_name(sheet)
+        data = GoogleSheetUtils.get_sheet_by_name(sheet)
         if data:
             print(f"Downloading {sheet}.")
             with open(f"{directory}/{sheet}.csv", mode='w', newline='') as file:
