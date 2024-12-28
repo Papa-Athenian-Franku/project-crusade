@@ -5,15 +5,9 @@ class ClaimService:
         self.sheet_utils = GoogleSheetUtils()
 
     def get_claims(self):
-        """
-        Retrieve all claims from the 'Claims' sheet.
-        """
         return self.sheet_utils.get_sheet_by_name("Claims")
 
     def is_duplicate_claim(self, house_name, user_id):
-        """
-        Check if a claim already exists for the given house name or user ID.
-        """
         claims = self.get_claims()
         if not claims:
             return False, "No claims found."
@@ -27,16 +21,10 @@ class ClaimService:
         return False, None
 
     def create_claim(self, house_name, user_id):
-        """
-        Add a new claim to the 'Claims' sheet if it's valid.
-        """
         self.sheet_utils.write_to_row("Claims", [house_name.strip(), str(user_id)])
         return f"You have successfully claimed {house_name.strip()}."
 
     def delete_claim(self, identifier):
-        """
-        Delete a claim from the 'Claims' sheet by house name or user ID.
-        """
         sheet_values = self.get_claims()
         if not sheet_values:
             return "The Claims sheet is empty or missing."

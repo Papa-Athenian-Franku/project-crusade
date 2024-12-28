@@ -10,24 +10,16 @@ class ClaimController(commands.Cog):
 
     @commands.command()
     async def claim(self, ctx):
-        # Ask the user for their house name
-        house = await self.collection_utils.ask_question(
-            ctx, self.bot,
-            "Give your House Name as: House Whatever (e.g., House O'Neill)", str
-        )
-
-        # Validate the house name format
+        house = await self.collection_utils.ask_question(ctx, self.bot,"Give your House Name as: House Whatever (e.g., House O'Neill)", str)
         if not house.strip().startswith("House "):
             await ctx.send("**Incorrect House Name format! Please try again using the format: 'House Whatever'.**")
             return
 
-        # Check for duplicate claims
         is_duplicate, error_message = self.claim_service.is_duplicate_claim(house, ctx.message.author.id)
         if is_duplicate:
             await ctx.send(f"**{error_message}**")
             return
 
-        # Create and confirm the claim
         await ctx.send(f"**{self.claim_service.create_claim(house, ctx.message.author.id)}**")
 
     @commands.command()

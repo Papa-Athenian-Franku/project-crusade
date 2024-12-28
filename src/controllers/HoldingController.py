@@ -1,18 +1,14 @@
 from discord.ext import commands
-from utils.sheets.LocalSheetUtils import LocalSheetUtils
+from services.HoldingService import HoldingService
 
 class HoldingController(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.local_sheet_utils = LocalSheetUtils()
+        self.holding_service = HoldingService()
 
     @commands.command()
     async def holding(self, ctx, holding):
-        sheet_values = self.local_sheet_utils.get_sheet_by_name("Holdings")
-        column_headings = sheet_values[0]
-        for row in sheet_values:
-            if row[0] == holding:
-                await ctx.send(embed=embed_utils.set_info_embed_from_list(column_headings, row))
+        await ctx.send(embed=self.holding_service.retrieve_holding(holding))
 
 async def setup(bot):
     await bot.add_cog(HoldingController(bot))

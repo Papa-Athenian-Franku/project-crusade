@@ -40,6 +40,7 @@ async def on_ready():
     print("Bot is ready!")
 
 async def download_sheets():
+    google_sheet_utils = GoogleSheetUtils()
     # Download sheets.
     sheet_names = ["Claims", "Wars", "Domestics", "Holdings", 
                    "Garrisons", "Armies", "Fleets", 
@@ -51,7 +52,7 @@ async def download_sheets():
         os.makedirs(directory)
     
     for sheet in sheet_names:
-        data = GoogleSheetUtils.get_sheet_by_name(sheet)
+        data = google_sheet_utils.get_sheet_by_name(sheet)
         if data:
             print(f"Downloading {sheet}.")
             with open(f"{directory}/{sheet}.csv", mode='w', newline='') as file:
